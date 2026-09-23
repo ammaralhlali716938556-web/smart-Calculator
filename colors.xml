@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Backgrounds -->
+    <color name="bg_main">#0E1117</color>
+    <color name="bg_header_badge">#1C2333</color>
+    <color name="bg_display">#161B26</color>
+    <color name="display_border">#2C3549</color>
+
+    <!-- Lion Gold / Amber Palette -->
+    <color name="lion_gold">#FFB300</color>
+    <color name="lion_gold_light">#FFD54F</color>
+    <color name="lion_gold_dark">#E69500</color>
+    <color name="lion_amber">#FFA000</color>
+    <color name="lion_accent">#FFE082</color>
+
+    <!-- Keypad Buttons -->
+    <color name="btn_number_bg">#1B202D</color>
+    <color name="btn_number_pressed">#283042</color>
+    <color name="btn_number_text">#FFFFFF</color>
+
+    <color name="btn_op_bg">#E5A93B</color>
+    <color name="btn_op_pressed">#C48E28</color>
+    <color name="btn_op_text">#0E1117</color>
+
+    <color name="btn_action_bg">#252C3D</color>
+    <color name="btn_action_pressed">#353E54</color>
+    <color name="btn_action_text">#E2E8F0</color>
+    <color name="btn_clear_text">#FF6B6B</color>
+
+    <color name="btn_equal_bg">#FFB300</color>
+    <color name="btn_equal_pressed">#FF8F00</color>
+    <color name="btn_equal_text">#0E1117</color>
+
+    <!-- Display Text -->
+    <color name="text_expression">#8E9AA8</color>
+    <color name="text_result">#FFFFFF</color>
+    <color name="text_subtitle">#A2B2C8</color>
+</resources>

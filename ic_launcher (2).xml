@@ -1,0 +1,102 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="128dp"
+    android:height="128dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+
+    <!-- Outer Glow Circle -->
+    <path
+        android:fillColor="#151922"
+        android:pathData="M50,4 C75.4,4 96,24.6 96,50 C96,75.4 75.4,96 50,96 C24.6,96 4,75.4 4,50 C4,24.6 24.6,4 50,4 Z" />
+
+    <!-- Lion Mane Outer Majestic Crown Layer -->
+    <path
+        android:fillColor="#E5A93B"
+        android:pathData="M50,8 L58,18 L68,12 L72,23 L83,21 L83,32 L93,35 L89,46 L97,52 L89,59 L95,67 L85,71 L88,80 L77,81 L75,91 L65,88 L58,96 L50,90 L42,96 L35,88 L25,91 L23,81 L12,80 L15,71 L5,67 L11,59 L3,52 L11,46 L7,35 L17,32 L17,21 L28,23 L32,12 L42,18 Z" />
+
+    <!-- Inner Mane Layer (Rich Gold & Amber Depth) -->
+    <path
+        android:fillColor="#C68615"
+        android:pathData="M50,14 L56,22 L65,18 L68,27 L78,26 L77,35 L86,39 L82,48 L89,53 L81,59 L85,67 L76,69 L77,77 L68,78 L65,86 L57,82 L50,88 L43,82 L35,86 L32,78 L23,77 L24,69 L15,67 L19,59 L11,53 L18,48 L14,39 L23,35 L22,26 L32,27 L35,18 L44,22 Z" />
+
+    <!-- Lion Ears -->
+    <path
+        android:fillColor="#F6C358"
+        android:pathData="M27,24 C23,17 33,14 37,21 Z" />
+    <path
+        android:fillColor="#8C5302"
+        android:pathData="M28,23 C26,19 32,17 35,22 Z" />
+    <path
+        android:fillColor="#F6C358"
+        android:pathData="M73,24 C77,17 67,14 63,21 Z" />
+    <path
+        android:fillColor="#8C5302"
+        android:pathData="M72,23 C74,19 68,17 65,22 Z" />
+
+    <!-- Face Base (Warm Royal Gold) -->
+    <path
+        android:fillColor="#FFD56B"
+        android:pathData="M50,23 C62,23 71,32 71,45 C71,58 64,74 50,81 C36,74 29,58 29,45 C29,32 38,23 50,23 Z" />
+
+    <!-- Forehead Shading -->
+    <path
+        android:fillColor="#E5A93B"
+        android:pathData="M50,26 C57,26 62,31 63,38 L37,38 C38,31 43,26 50,26 Z" />
+
+    <!-- Royal Crown Accent on Forehead -->
+    <path
+        android:fillColor="#FFF0B3"
+        android:pathData="M50,28 L53,35 L47,35 Z" />
+
+    <!-- Cheeks & Snout Base -->
+    <path
+        android:fillColor="#FFF8E7"
+        android:pathData="M50,49 C57,49 61,54 61,61 C61,66 56,69 50,69 C44,69 39,66 39,61 C39,54 43,49 50,49 Z" />
+
+    <!-- Left Eye -->
+    <path
+        android:fillColor="#1A202C"
+        android:pathData="M37,42 C40,40 44,42 45,45 C42,46 39,45 37,42 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M42,43 C42.6,43 43,43.4 43,44 C43,44.6 42.6,45 42,45 C41.4,45 41,44.6 41,44 C41,43.4 41.4,43 42,43 Z" />
+
+    <!-- Right Eye -->
+    <path
+        android:fillColor="#1A202C"
+        android:pathData="M63,42 C60,40 56,42 55,45 C58,46 61,45 63,42 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M58,43 C58.6,43 59,43.4 59,44 C59,44.6 58.6,45 58,45 C57.4,45 57,44.6 57,44 C57,43.4 57.4,43 58,43 Z" />
+
+    <!-- Eyebrows -->
+    <path
+        android:fillColor="#8C5302"
+        android:pathData="M36,39 C39,37 44,38 46,41 L44,42 C42,40 39,39 36,41 Z" />
+    <path
+        android:fillColor="#8C5302"
+        android:pathData="M64,39 C61,37 56,38 54,41 L56,42 C58,40 61,39 64,41 Z" />
+
+    <!-- Nose Bridge -->
+    <path
+        android:fillColor="#C68615"
+        android:pathData="M47,42 L53,42 L52,53 L48,53 Z" />
+
+    <!-- Nose -->
+    <path
+        android:fillColor="#1A202C"
+        android:pathData="M46,53 L54,53 C55,53 55,54 54,55 L51,60 C50.5,60.8 49.5,60.8 49,60 L46,55 C45,54 45,53 46,53 Z" />
+
+    <!-- Whisker Dots -->
+    <path
+        android:fillColor="#8C5302"
+        android:pathData="M44,60 C44.5,60 45,60.5 45,61 C45,61.5 44.5,62 44,62 C43.5,62 43,61.5 43,61 C43,60.5 43.5,60 44,60 Z" />
+    <path
+        android:fillColor="#8C5302"
+        android:pathData="M56,60 C56.5,60 57,60.5 57,61 C57,61.5 56.5,62 56,62 C55.5,62 55,61.5 55,61 C55,60.5 55.5,60 56,60 Z" />
+
+    <!-- Chin Beard Accent -->
+    <path
+        android:fillColor="#E5A93B"
+        android:pathData="M47,69 L53,69 L50,76 Z" />
+</vector>

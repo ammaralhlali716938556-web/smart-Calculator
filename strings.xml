@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">حاسبة أبو أسد</string>
+    <string name="app_title">حاسبة أبو أسد</string>
+    <string name="app_subtitle">ABU ASAD CALCULATOR • فخامة ودقة</string>
+    <string name="error_divide_zero">لا يمكن القسمة على صفر</string>
+    <string name="error_generic">خطأ</string>
+</resources>
