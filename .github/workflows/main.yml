@@ -287,15 +287,18 @@ jobs:
                   </LinearLayout>
               </LinearLayout>
 
+              <!-- حاوية الشاشة العلوية والشاشة الرئيسية -->
               <LinearLayout
                   android:layout_width="match_parent"
-                  android:layout_height="140dp"
+                  android:layout_height="145dp"
                   android:layout_marginTop="4dp"
                   android:layout_marginBottom="16dp"
                   android:background="@drawable/display_background"
                   android:gravity="bottom|end"
                   android:orientation="vertical"
                   android:padding="16dp">
+
+                  <!-- السطر الأول: المعادلة الحالية -->
                   <HorizontalScrollView
                       android:layout_width="match_parent"
                       android:layout_height="wrap_content"
@@ -308,12 +311,34 @@ jobs:
                           android:layout_gravity="end"
                           android:singleLine="true"
                           android:textColor="@color/text_expression"
-                          android:textSize="20sp" />
+                          android:textSize="18sp"
+                          android:textDirection="ltr" />
                   </HorizontalScrollView>
+
+                  <!-- السطر الثاني: النافذة العلوية للنتيجة الفورية المباشرة -->
                   <HorizontalScrollView
                       android:layout_width="match_parent"
                       android:layout_height="wrap_content"
-                      android:layout_marginTop="4dp"
+                      android:layout_marginTop="2dp"
+                      android:fillViewport="true"
+                      android:scrollbars="none">
+                      <TextView
+                          android:id="@+id/tvLiveResult"
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:layout_gravity="end"
+                          android:singleLine="true"
+                          android:textColor="@color/lion_gold"
+                          android:textSize="22sp"
+                          android:textStyle="bold"
+                          android:textDirection="ltr" />
+                  </HorizontalScrollView>
+
+                  <!-- السطر الثالث: الرقم الحالي والناتج النهائي -->
+                  <HorizontalScrollView
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="2dp"
                       android:fillViewport="true"
                       android:scrollbars="none">
                       <TextView
@@ -324,8 +349,9 @@ jobs:
                           android:singleLine="true"
                           android:text="0"
                           android:textColor="@color/text_result"
-                          android:textSize="44sp"
-                          android:textStyle="bold" />
+                          android:textSize="40sp"
+                          android:textStyle="bold"
+                          android:textDirection="ltr" />
                   </HorizontalScrollView>
               </LinearLayout>
 
@@ -384,12 +410,9 @@ jobs:
           import androidx.appcompat.app.AppCompatActivity;
           import java.math.BigDecimal;
           import java.math.RoundingMode;
-          import java.text.DecimalFormat;
-          import java.text.DecimalFormatSymbols;
-          import java.util.Locale;
 
           public class MainActivity extends AppCompatActivity {
-              private TextView tvExpression, tvResult;
+              private TextView tvExpression, tvLiveResult, tvResult;
               private String currentInput = "0";
               private BigDecimal firstOperand = null;
               private String pendingOperator = null;
@@ -401,6 +424,7 @@ jobs:
                   super.onCreate(savedInstanceState);
                   setContentView(R.layout.activity_main);
                   tvExpression = findViewById(R.id.tvExpression);
+                  tvLiveResult = findViewById(R.id.tvLiveResult);
                   tvResult = findViewById(R.id.tvResult);
 
                   int[] numIds = {R.id.btn0, R.id.btn1, R.id.btn2, R.id.btn3, R.id.btn4, R.id.btn5, R.id.btn6, R.id.btn7, R.id.btn8, R.id.btn9};
@@ -424,43 +448,106 @@ jobs:
 
               private void appendDigit(String d) {
                   if (isCalculationFinished) clear();
-                  if (isOperatorJustPressed) { currentInput = d; isOperatorJustPressed = false; }
-                  else { currentInput = "0".equals(currentInput) ? d : currentInput + d; }
+                  if (isOperatorJustPressed) {
+                      currentInput = d;
+                      isOperatorJustPressed = false;
+                  } else {
+                      currentInput = "0".equals(currentInput) ? d : currentInput + d;
+                  }
                   tvResult.setText(currentInput);
+                  updateLivePreview();
               }
 
               private void appendDot() {
                   if (isCalculationFinished) clear();
-                  if (isOperatorJustPressed) { currentInput = "0."; isOperatorJustPressed = false; }
-                  else if (!currentInput.contains(".")) { currentInput += "."; }
+                  if (isOperatorJustPressed) {
+                      currentInput = "0.";
+                      isOperatorJustPressed = false;
+                  } else if (!currentInput.contains(".")) {
+                      currentInput += ".";
+                  }
                   tvResult.setText(currentInput);
+                  updateLivePreview();
               }
 
               private void handleOp(String op) {
                   if (firstOperand == null || isCalculationFinished) {
                       firstOperand = new BigDecimal(currentInput);
                   } else if (!isOperatorJustPressed) {
-                      firstOperand = execute(firstOperand, pendingOperator, new BigDecimal(currentInput));
-                      if (firstOperand == null) { tvResult.setText(getString(R.string.error_divide_zero)); clear(); return; }
-                      tvResult.setText(firstOperand.stripTrailingZeros().toPlainString());
+                      try {
+                          String cleanStr = currentInput.endsWith(".") ? currentInput.substring(0, currentInput.length() - 1) : currentInput;
+                          firstOperand = execute(firstOperand, pendingOperator, new BigDecimal(cleanStr));
+                          if (firstOperand == null) {
+                              tvResult.setText(getString(R.string.error_divide_zero));
+                              clear();
+                              return;
+                          }
+                          tvResult.setText(firstOperand.stripTrailingZeros().toPlainString());
+                      } catch (Exception e) {
+                          clear();
+                          return;
+                      }
                   }
                   pendingOperator = op;
                   isOperatorJustPressed = true;
                   isCalculationFinished = false;
                   tvExpression.setText(firstOperand.stripTrailingZeros().toPlainString() + " " + op);
+                  tvLiveResult.setText("");
+              }
+
+              private void updateLivePreview() {
+                  if (firstOperand != null && pendingOperator != null && !isOperatorJustPressed && !isCalculationFinished) {
+                      String secondStr = currentInput;
+                      String cleanStr = secondStr.endsWith(".") ? secondStr.substring(0, secondStr.length() - 1) : secondStr;
+                      if (cleanStr.isEmpty() || cleanStr.equals("-")) {
+                          tvLiveResult.setText("");
+                          return;
+                      }
+                      try {
+                          BigDecimal second = new BigDecimal(cleanStr);
+                          BigDecimal res = execute(firstOperand, pendingOperator, second);
+                          if (res != null) {
+                              tvLiveResult.setText("= " + res.stripTrailingZeros().toPlainString());
+                          } else {
+                              tvLiveResult.setText("");
+                          }
+                      } catch (Exception e) {
+                          tvLiveResult.setText("");
+                      }
+
+                      String formattedSecond = currentInput.startsWith("-") ? "(" + currentInput + ")" : currentInput;
+                      tvExpression.setText(firstOperand.stripTrailingZeros().toPlainString() + " " + pendingOperator + " " + formattedSecond);
+                  } else if (firstOperand != null && pendingOperator != null && isOperatorJustPressed) {
+                      tvExpression.setText(firstOperand.stripTrailingZeros().toPlainString() + " " + pendingOperator);
+                      tvLiveResult.setText("");
+                  } else if (!isCalculationFinished) {
+                      tvExpression.setText("");
+                      tvLiveResult.setText("");
+                  }
               }
 
               private void calculate() {
                   if (firstOperand == null || pendingOperator == null || isOperatorJustPressed) return;
-                  BigDecimal second = new BigDecimal(currentInput);
-                  BigDecimal res = execute(firstOperand, pendingOperator, second);
-                  if (res == null) { tvResult.setText(getString(R.string.error_divide_zero)); clear(); return; }
-                  tvExpression.setText(firstOperand.stripTrailingZeros().toPlainString() + " " + pendingOperator + " " + second.stripTrailingZeros().toPlainString() + " =");
-                  currentInput = res.stripTrailingZeros().toPlainString();
-                  tvResult.setText(currentInput);
-                  firstOperand = null;
-                  pendingOperator = null;
-                  isCalculationFinished = true;
+                  try {
+                      String cleanStr = currentInput.endsWith(".") ? currentInput.substring(0, currentInput.length() - 1) : currentInput;
+                      BigDecimal second = new BigDecimal(cleanStr);
+                      BigDecimal res = execute(firstOperand, pendingOperator, second);
+                      if (res == null) {
+                          tvResult.setText(getString(R.string.error_divide_zero));
+                          clear();
+                          return;
+                      }
+                      String formattedSecond = currentInput.startsWith("-") ? "(" + currentInput + ")" : currentInput;
+                      tvExpression.setText(firstOperand.stripTrailingZeros().toPlainString() + " " + pendingOperator + " " + formattedSecond + " =");
+                      currentInput = res.stripTrailingZeros().toPlainString();
+                      tvResult.setText(currentInput);
+                      tvLiveResult.setText("");
+                      firstOperand = null;
+                      pendingOperator = null;
+                      isCalculationFinished = true;
+                  } catch (Exception e) {
+                      clear();
+                  }
               }
 
               private BigDecimal execute(BigDecimal a, String op, BigDecimal b) {
@@ -479,6 +566,7 @@ jobs:
                   if (!"0".equals(currentInput)) {
                       currentInput = currentInput.startsWith("-") ? currentInput.substring(1) : "-" + currentInput;
                       tvResult.setText(currentInput);
+                      updateLivePreview();
                   }
               }
 
@@ -486,13 +574,23 @@ jobs:
                   try {
                       currentInput = new BigDecimal(currentInput).divide(new BigDecimal("100"), 10, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
                       tvResult.setText(currentInput);
+                      updateLivePreview();
                   } catch (Exception ignored) {}
               }
 
               private void backspace() {
-                  if (currentInput.length() > 1) { currentInput = currentInput.substring(0, currentInput.length() - 1); }
-                  else { currentInput = "0"; }
+                  if (isCalculationFinished) {
+                      clear();
+                      return;
+                  }
+                  if (isOperatorJustPressed) return;
+                  if (currentInput.length() > 1) {
+                      currentInput = currentInput.substring(0, currentInput.length() - 1);
+                  } else {
+                      currentInput = "0";
+                  }
                   tvResult.setText(currentInput);
+                  updateLivePreview();
               }
 
               private void clear() {
@@ -502,6 +600,7 @@ jobs:
                   isOperatorJustPressed = false;
                   isCalculationFinished = false;
                   tvExpression.setText("");
+                  tvLiveResult.setText("");
                   tvResult.setText("0");
               }
           }
