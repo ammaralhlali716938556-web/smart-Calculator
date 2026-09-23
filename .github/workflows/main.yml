@@ -17,43 +17,533 @@ jobs:
       - name: 📥 جلب الكود
         uses: actions/checkout@v4
 
-      - name: ☕ تثبيت JDK 17
+      - name: ☕ تثبيت بيئة جافا (JDK 17)
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: 🐘 تثبيت Gradle
+      - name: 🐘 تثبيت وإعداد Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: ⚙️ تجهيز بيئة البناء
+      - name: ⚙️ تجهيز وبرمجة كامل ملفات حاسبة أبو أسد تلقائياً
+        run: |
+          python3 - << 'EOF'
+          import os
+
+          files = {}
+
+          # 1. settings.gradle
+          files["settings.gradle"] = """pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "AbuAsadCalculator"
+          include ':app'
+          """
+
+          # 2. build.gradle
+          files["build.gradle"] = """plugins {
+              id 'com.android.application' version '8.2.2' apply false
+          }
+          task clean(type: Delete) {
+              delete rootProject.buildDir
+          }
+          """
+
+          # 3. gradle.properties
+          files["gradle.properties"] = """org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+          android.useAndroidX=true
+          android.nonTransitiveRClass=true
+          """
+
+          # 4. app/build.gradle
+          files["app/build.gradle"] = """plugins {
+              id 'com.android.application'
+          }
+          android {
+              namespace 'com.abuasad.calculator'
+              compileSdk 34
+              defaultConfig {
+                  applicationId "com.abuasad.calculator"
+                  minSdk 21
+                  targetSdk 34
+                  versionCode 1
+                  versionName "1.0.0"
+                  vectorDrawables {
+                      useSupportLibrary true
+                  }
+              }
+              buildTypes {
+                  release {
+                      minifyEnabled false
+                      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+                  }
+                  debug {
+                      applicationIdSuffix ""
+                      debuggable true
+                  }
+              }
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+          }
+          dependencies {
+              implementation 'androidx.appcompat:appcompat:1.6.1'
+              implementation 'com.google.android.material:material:1.11.0'
+          }
+          """
+
+          # 5. AndroidManifest.xml
+          files["app/src/main/AndroidManifest.xml"] = """<?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <application
+                  android:allowBackup="true"
+                  android:icon="@drawable/ic_lion"
+                  android:roundIcon="@drawable/ic_lion"
+                  android:label="@string/app_name"
+                  android:supportsRtl="true"
+                  android:theme="@style/Theme.AbuAsadCalculator">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:screenOrientation="portrait">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          """
+
+          # 6. Strings
+          files["app/src/main/res/values/strings.xml"] = """<?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <string name="app_name">حاسبة أبو أسد</string>
+              <string name="app_title">حاسبة أبو أسد</string>
+              <string name="app_subtitle">ABU ASAD CALCULATOR • فخامة ودقة</string>
+              <string name="error_divide_zero">لا يمكن القسمة على صفر</string>
+          </resources>
+          """
+
+          # 7. Colors
+          files["app/src/main/res/values/colors.xml"] = """<?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <color name="bg_main">#0E1117</color>
+              <color name="bg_header_badge">#1C2333</color>
+              <color name="bg_display">#161B26</color>
+              <color name="display_border">#2C3549</color>
+              <color name="lion_gold">#FFB300</color>
+              <color name="lion_gold_light">#FFD54F</color>
+              <color name="lion_gold_dark">#E69500</color>
+              <color name="lion_amber">#FFA000</color>
+              <color name="btn_number_bg">#1B202D</color>
+              <color name="btn_number_pressed">#283042</color>
+              <color name="btn_number_text">#FFFFFF</color>
+              <color name="btn_op_bg">#E5A93B</color>
+              <color name="btn_op_pressed">#C48E28</color>
+              <color name="btn_op_text">#0E1117</color>
+              <color name="btn_action_bg">#252C3D</color>
+              <color name="btn_action_pressed">#353E54</color>
+              <color name="btn_action_text">#E2E8F0</color>
+              <color name="btn_clear_text">#FF6B6B</color>
+              <color name="btn_equal_pressed">#FF8F00</color>
+              <color name="btn_equal_text">#0E1117</color>
+              <color name="text_expression">#8E9AA8</color>
+              <color name="text_result">#FFFFFF</color>
+              <color name="text_subtitle">#A2B2C8</color>
+          </resources>
+          """
+
+          # 8. Themes
+          files["app/src/main/res/values/themes.xml"] = """<?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <style name="Theme.AbuAsadCalculator" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+                  <item name="colorPrimary">@color/lion_gold</item>
+                  <item name="colorPrimaryVariant">@color/lion_gold_dark</item>
+                  <item name="android:statusBarColor">@color/bg_main</item>
+                  <item name="android:navigationBarColor">@color/bg_main</item>
+                  <item name="android:windowBackground">@color/bg_main</item>
+              </style>
+          </resources>
+          """
+
+          # 9. Lion Icon (Vector)
+          files["app/src/main/res/drawable/ic_lion.xml"] = """<vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="128dp"
+              android:height="128dp"
+              android:viewportWidth="100"
+              android:viewportHeight="100">
+              <path android:fillColor="#151922" android:pathData="M50,4 C75.4,4 96,24.6 96,50 C96,75.4 75.4,96 50,96 C24.6,96 4,75.4 4,50 C4,24.6 24.6,4 50,4 Z" />
+              <path android:fillColor="#E5A93B" android:pathData="M50,8 L58,18 L68,12 L72,23 L83,21 L83,32 L93,35 L89,46 L97,52 L89,59 L95,67 L85,71 L88,80 L77,81 L75,91 L65,88 L58,96 L50,90 L42,96 L35,88 L25,91 L23,81 L12,80 L15,71 L5,67 L11,59 L3,52 L11,46 L7,35 L17,32 L17,21 L28,23 L32,12 L42,18 Z" />
+              <path android:fillColor="#C68615" android:pathData="M50,14 L56,22 L65,18 L68,27 L78,26 L77,35 L86,39 L82,48 L89,53 L81,59 L85,67 L76,69 L77,77 L68,78 L65,86 L57,82 L50,88 L43,82 L35,86 L32,78 L23,77 L24,69 L15,67 L19,59 L11,53 L18,48 L14,39 L23,35 L22,26 L32,27 L35,18 L44,22 Z" />
+              <path android:fillColor="#F6C358" android:pathData="M27,24 C23,17 33,14 37,21 Z" />
+              <path android:fillColor="#F6C358" android:pathData="M73,24 C77,17 67,14 63,21 Z" />
+              <path android:fillColor="#FFD56B" android:pathData="M50,23 C62,23 71,32 71,45 C71,58 64,74 50,81 C36,74 29,58 29,45 C29,32 38,23 50,23 Z" />
+              <path android:fillColor="#FFF8E7" android:pathData="M50,49 C57,49 61,54 61,61 C61,66 56,69 50,69 C44,69 39,66 39,61 C39,54 43,49 50,49 Z" />
+              <path android:fillColor="#1A202C" android:pathData="M37,42 C40,40 44,42 45,45 C42,46 39,45 37,42 Z" />
+              <path android:fillColor="#1A202C" android:pathData="M63,42 C60,40 56,42 55,45 C58,46 61,45 63,42 Z" />
+              <path android:fillColor="#1A202C" android:pathData="M46,53 L54,53 C55,53 55,54 54,55 L51,60 C50.5,60.8 49.5,60.8 49,60 L46,55 C45,54 45,53 46,53 Z" />
+          </vector>
+          """
+
+          files["app/src/main/res/drawable/badge_lion_bg.xml"] = """<?xml version="1.0" encoding="utf-8"?>
+          <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+              <solid android:color="@color/bg_header_badge" />
+              <stroke android:width="2dp" android:color="@color/lion_gold" />
+          </shape>
+          """
+
+          files["app/src/main/res/drawable/display_background.xml"] = """<?xml version="1.0" encoding="utf-8"?>
+          <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+              <solid android:color="@color/bg_display" />
+              <corners android:radius="24dp" />
+              <stroke android:width="1.5dp" android:color="@color/display_border" />
+          </shape>
+          """
+
+          files["app/src/main/res/drawable/btn_number_bg.xml"] = """<?xml version="1.0" encoding="utf-8"?>
+          <selector xmlns:android="http://schemas.android.com/apk/res/android">
+              <item android:state_pressed="true"><shape><solid android:color="@color/btn_number_pressed" /><corners android:radius="20dp" /></shape></item>
+              <item><shape><solid android:color="@color/btn_number_bg" /><corners android:radius="20dp" /></shape></item>
+          </selector>
+          """
+
+          files["app/src/main/res/drawable/btn_operator_bg.xml"] = """<?xml version="1.0" encoding="utf-8"?>
+          <selector xmlns:android="http://schemas.android.com/apk/res/android">
+              <item android:state_pressed="true"><shape><solid android:color="@color/btn_op_pressed" /><corners android:radius="20dp" /></shape></item>
+              <item><shape><solid android:color="@color/btn_op_bg" /><corners android:radius="20dp" /></shape></item>
+          </selector>
+          """
+
+          files["app/src/main/res/drawable/btn_action_bg.xml"] = """<?xml version="1.0" encoding="utf-8"?>
+          <selector xmlns:android="http://schemas.android.com/apk/res/android">
+              <item android:state_pressed="true"><shape><solid android:color="@color/btn_action_pressed" /><corners android:radius="20dp" /></shape></item>
+              <item><shape><solid android:color="@color/btn_action_bg" /><corners android:radius="20dp" /></shape></item>
+          </selector>
+          """
+
+          files["app/src/main/res/drawable/btn_equal_bg.xml"] = """<?xml version="1.0" encoding="utf-8"?>
+          <selector xmlns:android="http://schemas.android.com/apk/res/android">
+              <item android:state_pressed="true"><shape><solid android:color="@color/btn_equal_pressed" /><corners android:radius="20dp" /></shape></item>
+              <item><shape><gradient android:angle="45" android:startColor="@color/lion_amber" android:endColor="@color/lion_gold_light" /><corners android:radius="20dp" /></shape></item>
+          </selector>
+          """
+
+          # 10. Layout (activity_main.xml)
+          files["app/src/main/res/layout/activity_main.xml"] = """<?xml version="1.0" encoding="utf-8"?>
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@color/bg_main"
+              android:orientation="vertical"
+              android:padding="12dp">
+
+              <LinearLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:gravity="center"
+                  android:orientation="horizontal"
+                  android:paddingTop="8dp"
+                  android:paddingBottom="12dp">
+                  <ImageView
+                      android:layout_width="52dp"
+                      android:layout_height="52dp"
+                      android:layout_marginEnd="12dp"
+                      android:background="@drawable/badge_lion_bg"
+                      android:padding="6dp"
+                      android:src="@drawable/ic_lion" />
+                  <LinearLayout
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:orientation="vertical">
+                      <TextView
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:fontFamily="sans-serif-black"
+                          android:text="@string/app_title"
+                          android:textColor="@color/lion_gold"
+                          android:textSize="26sp"
+                          android:textStyle="bold" />
+                      <TextView
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:letterSpacing="0.08"
+                          android:text="@string/app_subtitle"
+                          android:textColor="@color/text_subtitle"
+                          android:textSize="10.5sp" />
+                  </LinearLayout>
+              </LinearLayout>
+
+              <LinearLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="140dp"
+                  android:layout_marginTop="4dp"
+                  android:layout_marginBottom="16dp"
+                  android:background="@drawable/display_background"
+                  android:gravity="bottom|end"
+                  android:orientation="vertical"
+                  android:padding="16dp">
+                  <HorizontalScrollView
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:fillViewport="true"
+                      android:scrollbars="none">
+                      <TextView
+                          android:id="@+id/tvExpression"
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:layout_gravity="end"
+                          android:singleLine="true"
+                          android:textColor="@color/text_expression"
+                          android:textSize="20sp" />
+                  </HorizontalScrollView>
+                  <HorizontalScrollView
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="4dp"
+                      android:fillViewport="true"
+                      android:scrollbars="none">
+                      <TextView
+                          android:id="@+id/tvResult"
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:layout_gravity="end"
+                          android:singleLine="true"
+                          android:text="0"
+                          android:textColor="@color/text_result"
+                          android:textSize="44sp"
+                          android:textStyle="bold" />
+                  </HorizontalScrollView>
+              </LinearLayout>
+
+              <LinearLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="0dp"
+                  android:layout_weight="1"
+                  android:orientation="vertical">
+
+                  <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_marginBottom="8dp" android:layout_weight="1">
+                      <androidx.appcompat.widget.AppCompatButton android:id="@+id/btnClear" android:layout_width="0dp" android:layout_height="match_parent" android:layout_margin="4dp" android:layout_weight="1" android:background="@drawable/btn_action_bg" android:text="C" android:textColor="@color/btn_clear_text" android:textSize="22sp" android:textStyle="bold" />
+                      <androidx.appcompat.widget.AppCompatButton android:id="@+id/btnPlusMinus" android:layout_width="0dp" android:layout_height="match_parent" android:layout_margin="4dp" android:layout_weight="1" android:background="@drawable/btn_action_bg" android:text="±" android:textColor="@color/btn_action_text" android:textSize="22sp" android:textStyle="bold" />
+                      <androidx.appcompat.widget.AppCompatButton android:id="@+id/btnPercent" android:layout_width="0dp" android:layout_height="match_parent" android:layout_margin="4dp" android:layout_weight="1" android:background="@drawable/btn_action_bg" android:text="%" android:textColor="@color/btn_action_text" android:textSize="22sp" android:textStyle="bold" />
+                      <androidx.appcompat.widget.AppCompatButton android:id="@+id/btnDivide" android:layout_width="0dp" android:layout_height="match_parent" android:layout_margin="4dp" android:layout_weight="1" android:background="@drawable/btn_operator_bg" android:text="÷" android:textColor="@color/btn_op_text" android:textSize="26sp" android:textStyle="bold" />
+                  </LinearLayout>
+
+                  <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_marginBottom="8dp" android:layout_weight="1">
+                      <androidx.appcompat.widget.AppCompatButton android:id="@+id/btn7" android:layout_width="0dp" android:layout_height="match_parent" android:layout_margin="4dp" android:layout_weight="1" android:background="@drawable/btn_number_bg" android:text="7" android:textColor="@color/btn_number_text" android:textSize="24sp" android:textStyle="bold" />
+                      <androidx.appcompat.widget.AppCompatButton android:id="@+id/btn8" android:layout_width="0dp" android:layout_height="match_parent" android:layout_margin="4dp" android:layout_weight="1" android:background="@drawable/btn_number_bg" android:text="8" android:textColor="@color/btn_number_text" android:textSize="24sp" android:textStyle="bold" />
+                      <androidx.appcompat.widget.AppCompatButton android:id="@+id/btn9" android:layout_width="0dp" android:layout_height="match_parent" android:layout_margin="4dp" android:layout_weight="1" android:background="@drawable/btn_number_bg" android:text="9" android:textColor="@color/btn_number_text" android:textSize="24sp" android:textStyle="bold" />
+                      <androidx.appcompat.widget.AppCompatButton android:id="@+id/btnMultiply" android:layout_width="0dp" android:layout_height="match_parent" android:layout_margin="4dp" android:layout_weight="1" android:background="@drawable/btn_operator_bg" android:text="×" android:textColor="@color/btn_op_text" android:textSize="26sp" android:textStyle="bold" />
+                  </LinearLayout>
+
+                  <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_marginBottom="8dp" android:layout_weight="1">
+                      <androidx.appcompat.widget.AppCompatButton android:id="@+id/btn4" android:layout_width="0dp" android:layout_height="match_parent" android:layout_margin="4dp" android:layout_weight="1" android:background="@drawable/btn_number_bg" android:text="4" android:textColor="@color/btn_number_text" android:textSize="24sp" android:textStyle="bold" />
+                      <androidx.appcompat.widget.AppCompatButton android:id="@+id/btn5" android:layout_width="0dp" android:layout_height="match_parent" android:layout_margin="4dp" android:layout_weight="1" android:background="@drawable/btn_number_bg" android:text="5" android:textColor="@color/btn_number_text" android:textSize="24sp" android:textStyle="bold" />
+                      <androidx.appcompat.widget.AppCompatButton android:id="@+id/btn6" android:layout_width="0dp" android:layout_height="match_parent" android:layout_margin="4dp" android:layout_weight="1" android:background="@drawable/btn_number_bg" android:text="6" android:textColor="@color/btn_number_text" android:textSize="24sp" android:textStyle="bold" />
+                      <androidx.appcompat.widget.AppCompatButton android:id="@+id/btnSubtract" android:layout_width="0dp" android:layout_height="match_parent" android:layout_margin="4dp" android:layout_weight="1" android:background="@drawable/btn_operator_bg" android:text="−" android:textColor="@color/btn_op_text" android:textSize="26sp" android:textStyle="bold" />
+                  </LinearLayout>
+
+                  <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_marginBottom="8dp" android:layout_weight="1">
+                      <androidx.appcompat.widget.AppCompatButton android:id="@+id/btn1" android:layout_width="0dp" android:layout_height="match_parent" android:layout_margin="4dp" android:layout_weight="1" android:background="@drawable/btn_number_bg" android:text="1" android:textColor="@color/btn_number_text" android:textSize="24sp" android:textStyle="bold" />
+                      <androidx.appcompat.widget.AppCompatButton android:id="@+id/btn2" android:layout_width="0dp" android:layout_height="match_parent" android:layout_margin="4dp" android:layout_weight="1" android:background="@drawable/btn_number_bg" android:text="2" android:textColor="@color/btn_number_text" android:textSize="24sp" android:textStyle="bold" />
+                      <androidx.appcompat.widget.AppCompatButton android:id="@+id/btn3" android:layout_width="0dp" android:layout_height="match_parent" android:layout_margin="4dp" android:layout_weight="1" android:background="@drawable/btn_number_bg" android:text="3" android:textColor="@color/btn_number_text" android:textSize="24sp" android:textStyle="bold" />
+                      <androidx.appcompat.widget.AppCompatButton android:id="@+id/btnAdd" android:layout_width="0dp" android:layout_height="match_parent" android:layout_margin="4dp" android:layout_weight="1" android:background="@drawable/btn_operator_bg" android:text="+" android:textColor="@color/btn_op_text" android:textSize="26sp" android:textStyle="bold" />
+                  </LinearLayout>
+
+                  <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_marginBottom="4dp" android:layout_weight="1">
+                      <androidx.appcompat.widget.AppCompatButton android:id="@+id/btnBackspace" android:layout_width="0dp" android:layout_height="match_parent" android:layout_margin="4dp" android:layout_weight="1" android:background="@drawable/btn_action_bg" android:text="⌫" android:textColor="@color/btn_action_text" android:textSize="22sp" android:textStyle="bold" />
+                      <androidx.appcompat.widget.AppCompatButton android:id="@+id/btn0" android:layout_width="0dp" android:layout_height="match_parent" android:layout_margin="4dp" android:layout_weight="1" android:background="@drawable/btn_number_bg" android:text="0" android:textColor="@color/btn_number_text" android:textSize="24sp" android:textStyle="bold" />
+                      <androidx.appcompat.widget.AppCompatButton android:id="@+id/btnDot" android:layout_width="0dp" android:layout_height="match_parent" android:layout_margin="4dp" android:layout_weight="1" android:background="@drawable/btn_number_bg" android:text="." android:textColor="@color/btn_number_text" android:textSize="24sp" android:textStyle="bold" />
+                      <androidx.appcompat.widget.AppCompatButton android:id="@+id/btnEquals" android:layout_width="0dp" android:layout_height="match_parent" android:layout_margin="4dp" android:layout_weight="1" android:background="@drawable/btn_equal_bg" android:text="=" android:textColor="@color/btn_equal_text" android:textSize="26sp" android:textStyle="bold" />
+                  </LinearLayout>
+              </LinearLayout>
+          </LinearLayout>
+          """
+
+          # 11. MainActivity.java
+          files["app/src/main/java/com/abuasad/calculator/MainActivity.java"] = """package com.abuasad.calculator;
+
+          import android.os.Bundle;
+          import android.view.HapticFeedbackConstants;
+          import android.view.View;
+          import android.widget.Button;
+          import android.widget.TextView;
+          import androidx.appcompat.app.AppCompatActivity;
+          import java.math.BigDecimal;
+          import java.math.RoundingMode;
+          import java.text.DecimalFormat;
+          import java.text.DecimalFormatSymbols;
+          import java.util.Locale;
+
+          public class MainActivity extends AppCompatActivity {
+              private TextView tvExpression, tvResult;
+              private String currentInput = "0";
+              private BigDecimal firstOperand = null;
+              private String pendingOperator = null;
+              private boolean isOperatorJustPressed = false;
+              private boolean isCalculationFinished = false;
+
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  setContentView(R.layout.activity_main);
+                  tvExpression = findViewById(R.id.tvExpression);
+                  tvResult = findViewById(R.id.tvResult);
+
+                  int[] numIds = {R.id.btn0, R.id.btn1, R.id.btn2, R.id.btn3, R.id.btn4, R.id.btn5, R.id.btn6, R.id.btn7, R.id.btn8, R.id.btn9};
+                  for (int id : numIds) {
+                      findViewById(id).setOnClickListener(v -> {
+                          v.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+                          appendDigit(((Button) v).getText().toString());
+                      });
+                  }
+                  findViewById(R.id.btnDot).setOnClickListener(v -> { v.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP); appendDot(); });
+                  findViewById(R.id.btnAdd).setOnClickListener(v -> { v.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP); handleOp("+"); });
+                  findViewById(R.id.btnSubtract).setOnClickListener(v -> { v.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP); handleOp("−"); });
+                  findViewById(R.id.btnMultiply).setOnClickListener(v -> { v.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP); handleOp("×"); });
+                  findViewById(R.id.btnDivide).setOnClickListener(v -> { v.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP); handleOp("÷"); });
+                  findViewById(R.id.btnEquals).setOnClickListener(v -> { v.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP); calculate(); });
+                  findViewById(R.id.btnClear).setOnClickListener(v -> { v.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP); clear(); });
+                  findViewById(R.id.btnBackspace).setOnClickListener(v -> { v.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP); backspace(); });
+                  findViewById(R.id.btnPlusMinus).setOnClickListener(v -> { v.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP); toggleSign(); });
+                  findViewById(R.id.btnPercent).setOnClickListener(v -> { v.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP); percent(); });
+              }
+
+              private void appendDigit(String d) {
+                  if (isCalculationFinished) clear();
+                  if (isOperatorJustPressed) { currentInput = d; isOperatorJustPressed = false; }
+                  else { currentInput = "0".equals(currentInput) ? d : currentInput + d; }
+                  tvResult.setText(currentInput);
+              }
+
+              private void appendDot() {
+                  if (isCalculationFinished) clear();
+                  if (isOperatorJustPressed) { currentInput = "0."; isOperatorJustPressed = false; }
+                  else if (!currentInput.contains(".")) { currentInput += "."; }
+                  tvResult.setText(currentInput);
+              }
+
+              private void handleOp(String op) {
+                  if (firstOperand == null || isCalculationFinished) {
+                      firstOperand = new BigDecimal(currentInput);
+                  } else if (!isOperatorJustPressed) {
+                      firstOperand = execute(firstOperand, pendingOperator, new BigDecimal(currentInput));
+                      if (firstOperand == null) { tvResult.setText(getString(R.string.error_divide_zero)); clear(); return; }
+                      tvResult.setText(firstOperand.stripTrailingZeros().toPlainString());
+                  }
+                  pendingOperator = op;
+                  isOperatorJustPressed = true;
+                  isCalculationFinished = false;
+                  tvExpression.setText(firstOperand.stripTrailingZeros().toPlainString() + " " + op);
+              }
+
+              private void calculate() {
+                  if (firstOperand == null || pendingOperator == null || isOperatorJustPressed) return;
+                  BigDecimal second = new BigDecimal(currentInput);
+                  BigDecimal res = execute(firstOperand, pendingOperator, second);
+                  if (res == null) { tvResult.setText(getString(R.string.error_divide_zero)); clear(); return; }
+                  tvExpression.setText(firstOperand.stripTrailingZeros().toPlainString() + " " + pendingOperator + " " + second.stripTrailingZeros().toPlainString() + " =");
+                  currentInput = res.stripTrailingZeros().toPlainString();
+                  tvResult.setText(currentInput);
+                  firstOperand = null;
+                  pendingOperator = null;
+                  isCalculationFinished = true;
+              }
+
+              private BigDecimal execute(BigDecimal a, String op, BigDecimal b) {
+                  try {
+                      switch (op) {
+                          case "+": return a.add(b);
+                          case "−": return a.subtract(b);
+                          case "×": return a.multiply(b);
+                          case "÷": return b.compareTo(BigDecimal.ZERO) == 0 ? null : a.divide(b, 10, RoundingMode.HALF_UP).stripTrailingZeros();
+                          default: return b;
+                      }
+                  } catch (Exception e) { return null; }
+              }
+
+              private void toggleSign() {
+                  if (!"0".equals(currentInput)) {
+                      currentInput = currentInput.startsWith("-") ? currentInput.substring(1) : "-" + currentInput;
+                      tvResult.setText(currentInput);
+                  }
+              }
+
+              private void percent() {
+                  try {
+                      currentInput = new BigDecimal(currentInput).divide(new BigDecimal("100"), 10, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
+                      tvResult.setText(currentInput);
+                  } catch (Exception ignored) {}
+              }
+
+              private void backspace() {
+                  if (currentInput.length() > 1) { currentInput = currentInput.substring(0, currentInput.length() - 1); }
+                  else { currentInput = "0"; }
+                  tvResult.setText(currentInput);
+              }
+
+              private void clear() {
+                  currentInput = "0";
+                  firstOperand = null;
+                  pendingOperator = null;
+                  isOperatorJustPressed = false;
+                  isCalculationFinished = false;
+                  tvExpression.setText("");
+                  tvResult.setText("0");
+              }
+          }
+          """
+
+          for path, content in files.items():
+              os.makedirs(os.path.dirname(path) if os.path.dirname(path) else ".", exist_ok=True)
+              with open(path, "w", encoding="utf-8") as f:
+                  f.write(content.strip() + "\n")
+
+          print("All Abu Asad Calculator project files generated successfully!")
+          EOF
+
+      - name: ⚙️ تجهيز وإعداد Gradle Wrapper
         run: |
           gradle wrapper --gradle-version 8.5
           chmod +x gradlew
 
-      - name: 🔨 بناء ملف الـ APK
+      - name: 🔨 بناء ملف APK الرسمي
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
-      - name: 📦 تجهيز ملف التطبيق
+      - name: 📦 استخراج ملف APK
         run: |
           mkdir -p apk_output
           APK_FILE=$(find app/build/outputs/apk/debug -name "*.apk" | head -n 1)
+          echo "تم العثور على التطبيق: $APK_FILE"
           cp "$APK_FILE" "apk_output/AbuAsad_Calculator.apk"
 
-      - name: 🚀 رفع ملف الـ APK للتحميل المباشر
+      - name: 🚀 رفع ملف الـ APK للتحميل المباشر (Artifact)
         uses: actions/upload-artifact@v4
         with:
           name: AbuAsad_Calculator_APK
           path: apk_output/AbuAsad_Calculator.apk
           retention-days: 30
 
-      - name: 🌟 إنشاء Release رسمي
+      - name: 🌟 إنشاء Release رسمي في جيت هوب
         if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         uses: softprops/action-gh-release@v2
         with:
           tag_name: "v1.0"
           name: "🦁 حاسبة أبو أسد - الإصدار 1.0"
-          body: "تم بناء التطبيق بنجاح بصيغة APK جاهز للتحميل والتثبيت المباشر."
+          body: "تم بناء التطبيق بنجاح بصيغة APK جاهز للتحميل والتثبيت المباشر على الهاتف."
           files: apk_output/AbuAsad_Calculator.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
